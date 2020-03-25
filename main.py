@@ -85,7 +85,7 @@ def main():
 def remove_old(dir_name):
 	test = os.listdir(dir_name)
 	for item in test:
-	    if item.endswith(".txt"):
+	    if item.endswith(".txt") or item.endswith(".html"):
 	        os.remove(os.path.join(dir_name, item))
 
 signal.signal(signal.SIGINT, signal_handler)
