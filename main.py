@@ -53,7 +53,7 @@ def parse_page(items):
 			dkorgprice = int(unidecode(info_div.find("del").text.replace(",","").strip()))
 			if dkdiscount >= config.discount and dkprice <= config.max_price and dkcat not in config.exclude_category:
 				result = "<tr>"
-				result += "<td><a href='{dkimageurl}'>{dkimage}</a></td>".format(dkimage=dkimage,dkimageurl=dkimage["src"])
+				result += "<td><a target='_blank' href='{dkimageurl}'>{dkimage}</a></td>".format(dkimage=dkimage,dkimageurl=dkimage["src"])
 				result += "<td>"
 				result += "{dkname}".format(dkname=dkname)
 				result += "<br/>"
@@ -61,7 +61,7 @@ def parse_page(items):
 				result += "<br/>"
 				result += "Discount: {dkdiscount}%".format(dkdiscount=dkdiscount)
 				result += "<br/>"
-				result += "URL: <a href='https://www.digikala.com/product/dkp-{dkid}'>https://www.digikala.com/product/dkp-{dkid}</a>".format(dkid=dkid)
+				result += "URL: <a target='_blank' href='https://www.digikala.com/product/dkp-{dkid}'>https://www.digikala.com/product/dkp-{dkid}</a>".format(dkid=dkid)
 				result += "<br/>"
 				result += "</td>"
 				result += "</tr>"
