@@ -1,6 +1,10 @@
 # digikala-crawler
 crawl digikala.com and save incredible offers
-# usage
-mv config.py.sample config.py
-pip install -r py-requirement-packages.txt
-python main.py
+### Installation
+digikala-crawler requires [python](https://python.org/) to run.
+Install the dependencies.
+```sh
+$ pip install -r py-requirement-packages.txt
+$ mv config.py.sample config.py
+$ python main.py
+```
