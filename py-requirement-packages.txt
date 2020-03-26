@@ -1,7 +1,8 @@
 datetime
-json
 beautifulsoup4
 bs4
 requests
 Unidecode
 urllib3
+
+

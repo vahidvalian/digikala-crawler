@@ -1,3 +1,4 @@
+db_name='db'
 #crawl this page
 target_url='https://www.digikala.com/landing-page/?category[0]=8749&category[1]=5967&category[2]=5966&category[3]=8&category[4]=5968&promotion_times[0]=active&last_filter=category&last_value=8&sortby=22&'
 # save offers with discount percent great than
