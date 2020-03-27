@@ -10,5 +10,6 @@ $ mv config.py.sample config.py
 $ python3 main.py
 ```
 ### TODO
+  - connect to [telegram bot](https://core.telegram.org/bots/api)
   - sort output by price, category, discount
   - search in name of product
