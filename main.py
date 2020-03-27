@@ -1,4 +1,4 @@
-import sys,config,logging,sqlite3,requests,json,signal
+import sys,config,logging,sqlite3,requests,json,signal,re, os
 from bs4 import BeautifulSoup
 from unidecode import unidecode
 class crawler:
@@ -8,14 +8,16 @@ class crawler:
 		self.logger.info('crawler started')
 		self.db_open()
 		self.db_init()
-		
-		for i in range(1,100000):
-			print(i)
-		# self.manage_pages()
+		self.manage_pages()
+		self.generate_output()
 	
 	def signal_handler(self, signal, frame):
 	  self.generate_output()
 	  sys.exit(0)
+
+	def path(self, filename):
+		dirname = os.path.dirname(__file__)
+		return os.path.join(dirname, filename)
 
 	def get_pages_count(self):
 		target_url = config.target_url + 'pageno=1'
@@ -40,10 +42,9 @@ class crawler:
 		soup = BeautifulSoup(page.content,"html.parser")
 		items = soup.find_all("div",{"class":"c-product-box"})
 		for item in items:
-			attr = json.loads(item['data-enhanced-ecommerce'])
-			info_div = item.find("div", {"class":"c-price__value"})
-
 			try:
+				attr = json.loads(item['data-enhanced-ecommerce'])
+				info_div = item.find("div", {"class":"c-price__value"})
 				dkid = attr['id']
 				dkname = attr['name']
 				dkcat = attr['category']
@@ -54,7 +55,14 @@ class crawler:
 			except Exception as e:
 				self.logger.error(str(e))
 				continue
-			if dkdiscount >= config.discount and dkprice <= config.max_price and dkcat not in config.exclude_category:
+
+			include_title = False
+			if config.include_title:
+				for search in config.include_title:
+					if re.search(search, dkname):
+						include_title = True
+
+			if (dkdiscount >= config.discount and dkprice <= config.max_price and dkcat not in config.exclude_category) or include_title == True:
 				sql = 'replace into products values({dkid},"{dkname}", "{dkcat}", {dkprice}, {dkorgprice}, {dkdiscount}, "{dkimage}", datetime("now"),datetime("now"))'.format(dkid=dkid, dkname=dkname, dkcat=dkcat, dkprice=dkprice, dkorgprice=dkorgprice, dkdiscount=dkdiscount, dkimage=dkimage)
 				self.db_query(sql)
 	
@@ -89,17 +97,19 @@ class crawler:
 		f.close()
 
 	def db_open(self):
-		self.conn = sqlite3.connect(config.db_name);
+		self.db_loc = self.path(config.db_name)
+
+		self.conn = sqlite3.connect(self.db_loc)
 		self.cursor = self.conn.cursor()
 
-		self.logger.info("database opened: {0}".format(config.db_name))
+		self.logger.info("database opened: {0}".format(self.db_loc))
 
 	def db_close(self):
 		if self.conn:
 			self.conn.commit()
 			self.cursor.close()
 			self.conn.close()
-			self.logger.info("database closed: {0}".format(config.db_name))
+			self.logger.info("database closed: {0}".format(self.db_loc))
 
 	def db_query(self, sql):
 		self.cursor.execute(sql)
@@ -129,8 +139,8 @@ class crawler:
 		
 	def log_config(self):
 		self.logger = logging.getLogger(__name__)
-		level = logging.getLevelName('INFO')
-		handler = logging.FileHandler("crawler.log")
+		level = logging.getLevelName('ERROR')
+		handler = logging.FileHandler(self.path('crawler.log'))
 		formatter = logging.Formatter('%(asctime)s-%(levelname)s-(line%(lineno)d): %(message)s')
 		handler.setFormatter(formatter)
 		self.logger.setLevel(20)
