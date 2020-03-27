@@ -1,6 +1,6 @@
 # digikala-crawler
 crawl digikala.com and save incredible offers in conditional data
-### [Demo](https://c0d.ir/dg-crawler/output/)
+### [Demo](https://c0d.ir/dg-crawler)
 ### Installation
 digikala-crawler requires [python3](https://python.org/) to run.
 Install the dependencies.
