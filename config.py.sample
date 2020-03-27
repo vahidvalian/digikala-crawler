@@ -7,4 +7,6 @@ discount=51
 # toman
 max_price=250000
 #dont save offer in this category
-exclude_category=['BOYS Homewear Sets','BOYS SWEATSHIRTS','GIRLS SWEATSHIRTS','MEN Bracelet','UniKids-homewear-bottom','UniKids-homewear-sets']
+exclude_category=['BOYS Homewear Sets','BOYS SWEATSHIRTS']
+# save offers than names contain this
+include_title=['شارژر', 'هندزفری']
