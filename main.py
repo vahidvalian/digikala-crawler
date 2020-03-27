@@ -8,6 +8,7 @@ class crawler:
 		self.logger.info('crawler started')
 		self.db_open()
 		self.db_init()
+		self.db_backup_product()
 		self.manage_pages()
 		self.generate_output()
 	
@@ -63,11 +64,12 @@ class crawler:
 						include_title = True
 
 			if (dkdiscount >= config.discount and dkprice <= config.max_price and dkcat not in config.exclude_category) or include_title == True:
-				sql = 'replace into products values({dkid},"{dkname}", "{dkcat}", {dkprice}, {dkorgprice}, {dkdiscount}, "{dkimage}", datetime("now"),datetime("now"))'.format(dkid=dkid, dkname=dkname, dkcat=dkcat, dkprice=dkprice, dkorgprice=dkorgprice, dkdiscount=dkdiscount, dkimage=dkimage)
+				sql = 'replace into products values({dkid},"{dkname}", "{dkcat}", {dkprice}, {dkorgprice}, {dkdiscount}, "{dkimage}", NUlL, datetime("now", "localtime"),datetime("now", "localtime"))'.format(dkid=dkid, dkname=dkname, dkcat=dkcat, dkprice=dkprice, dkorgprice=dkorgprice, dkdiscount=dkdiscount, dkimage=dkimage)
 				self.db_query(sql)
 	
 	def generate_output(self):
-		rows = self.db_select('*','products','1', 'discount DESC, price ASC')
+		self.db_labeling()
+		rows = self.db_select('*','products','1', 'tag is NULL, discount DESC, price ASC')
 		
 		if not rows:
 			exit(0)
@@ -76,8 +78,11 @@ class crawler:
 		f = open('index.html', "w+")
 		f.write(result)
 		for row in rows:
+			label = '<div style="text-align:center;color:gray; font-size:smaller">قدیمی</div>'
+			if row[7] == 'new':
+				label = '<div style="text-align:center;color:red; font-size:smaller">جدید</div>'
 			result = "<tr>"
-			result += "<td><a target='_blank' href='{0}'><img src='{0}' /></a></td>".format(row[6])
+			result += "<td><a target='_blank' href='{0}'><img src='{0}' /><br/>{1}</a></td>".format(row[6], label)
 			result += "<td>"
 			result += "{0}".format(row[1])
 			result += "<br/>"
@@ -87,7 +92,7 @@ class crawler:
 			result += "<br/>"
 			result += "URL: <a target='_blank' href='https://www.digikala.com/product/dkp-{0}'>https://www.digikala.com/product/dkp-{0}</a>".format(row[0])
 			result += "<br/>"
-			result += row[7]
+			result += row[8]
 			result += "<br/>"
 			result += "</td>"
 			result += "</tr>"
@@ -116,6 +121,18 @@ class crawler:
 		self.conn.commit()
 		self.logger.info("query executed: {0}".format(sql))
 
+	def db_backup_product(self):
+		self.db_query('DROP TABLE IF EXISTS `products_backup`');
+		self.db_query('CREATE TABLE `products_backup` AS SELECT * FROM `products` WHERE 1');
+		self.db_query('UPDATE `products_backup` SET `tag` = NULL');
+		self.db_query('DELETE FROM `products`');
+
+	def db_labeling(self):
+		self.db_query("""update products set tag = 'new' where products.id in (SELECT A.id from products A
+LEFt Join products_backup B
+ON A.id = B.id
+where B.id is NULL)""")
+
 	def db_select(self, columns, table, where='1', orderby='created desc'):
 		sql = 'SELECT {0} FROM {1} WHERE {2} ORDER BY {3}'.format(columns, table, where, orderby)
 		self.cursor.execute(sql)
@@ -132,6 +149,7 @@ class crawler:
 		"oldprice" Integer NOT NULL,
 		"discount" Integer NOT NULL,
 		"img_url" Text,
+		"tag" Text,
 		"created" DateTime NOT NULL,
 		"updated" DateTime NOT NULL,
 		CONSTRAINT "unique_id" UNIQUE ( "id" ) );"""
