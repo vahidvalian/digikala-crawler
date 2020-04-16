@@ -10,3 +10,4 @@ max_price=250000
 exclude_category=['BOYS Homewear Sets','BOYS SWEATSHIRTS']
 # save offers than names contain this
 include_title=['شارژر', 'هندزفری']
+exclude_title=['سوتین']

@@ -63,7 +63,14 @@ class crawler:
 					if re.search(search, dkname):
 						include_title = True
 
-			if (dkdiscount >= config.discount and dkprice <= config.max_price and dkcat not in config.exclude_category) or include_title == True:
+			exclude_title = False
+			if config.exclude_title:
+				for search in config.exclude_title:
+					if re.search(search, dkname):
+						exclude_title = True
+
+
+			if (dkdiscount >= config.discount and dkprice <= config.max_price and dkcat not in config.exclude_category) or include_title == True and exclude_title == False:
 				sql = 'replace into products values({dkid},"{dkname}", "{dkcat}", {dkprice}, {dkorgprice}, {dkdiscount}, "{dkimage}", NUlL, datetime("now", "localtime"),datetime("now", "localtime"))'.format(dkid=dkid, dkname=dkname, dkcat=dkcat, dkprice=dkprice, dkorgprice=dkorgprice, dkdiscount=dkdiscount, dkimage=dkimage)
 				self.db_query(sql)
 	
@@ -71,11 +78,14 @@ class crawler:
 		self.db_labeling()
 		rows = self.db_select('*','products','1', 'tag is NULL, discount DESC, price ASC')
 		
+		# print(rows)
+
 		if not rows:
 			exit(0)
 
+
 		result = "<html dir='rtl'><head><title>Digikala Promotions</title><meta name='language' content='farsi'/><meta charset='utf-8'/><head><body><style>img {width: 150px;height:auto} body * { font-size: 18px }</style><table>"
-		f = open('index.html', "w+")
+		f = open(self.path('index.html'), "w+")
 		f.write(result)
 		for row in rows:
 			label = '<div style="text-align:center;color:gray; font-size:smaller">قدیمی</div>'
